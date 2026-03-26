@@ -117,11 +117,15 @@
   width: 225px;
   flex-shrink: 0;
   padding-right: 15px;
+  display: flex;
+  align-items: center;
 }
 .ganttTrackCol {
   flex: 1;
   position: relative;
   min-width: 0;
+  display: flex;
+  align-items: center;
 }
 .monthLabels {
   display: flex;
@@ -179,7 +183,8 @@
 }
 .ganttBar {
   position: absolute;
-  top: 7px;
+  top: 50%;
+  transform: translateY(-50%);
   height: 30px;
   border-radius: 7px;
   overflow: hidden;

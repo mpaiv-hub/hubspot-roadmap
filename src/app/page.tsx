@@ -803,7 +803,6 @@ export default function RoadmapPage() {
                 >
                   <div className={styles.ganttLabelCol}>
                     <span className={styles.ganttLabel}>{p.title}</span>
-                    <span className={styles.ganttLabelMeta}>{prog.done}/{prog.total}</span>
                   </div>
                   <div className={styles.ganttTrackCol}>
                     {/* Grid lines */}
