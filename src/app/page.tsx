@@ -34,8 +34,10 @@ const PHASE_COLORS = {
   teal:  { bg: 'var(--teal-50)',  border: 'var(--teal-100)', accent: 'var(--teal-600)', text: 'var(--teal-900)', pill: 'var(--teal-800)' },
   blue:  { bg: 'var(--blue-50)',  border: 'var(--blue-100)', accent: 'var(--blue-600)', text: 'var(--blue-900)', pill: 'var(--blue-800)' },
   amber: { bg: 'var(--amber-50)', border: 'var(--amber-100)', accent: 'var(--amber-600)', text: 'var(--amber-900)', pill: 'var(--amber-800)' },
-  pink:  { bg: 'var(--pink-50)',  border: 'var(--pink-100)', accent: 'var(--pink-600)', text: 'var(--pink-900)', pill: 'var(--pink-800)' },
-  gray:  { bg: 'var(--gray-100)', border: 'var(--gray-200)', accent: 'var(--gray-600)', text: 'var(--gray-800)', pill: 'var(--gray-600)' },
+  pink:   { bg: 'var(--pink-50)',   border: 'var(--pink-100)',   accent: 'var(--pink-600)',   text: 'var(--pink-900)',   pill: 'var(--pink-800)' },
+  purple: { bg: 'var(--purple-50)', border: 'var(--purple-100)', accent: 'var(--purple-600)', text: 'var(--purple-900)', pill: 'var(--purple-800)' },
+  yellow: { bg: 'var(--yellow-50)', border: 'var(--yellow-100)', accent: 'var(--yellow-600)', text: 'var(--yellow-900)', pill: 'var(--yellow-800)' },
+  gray:   { bg: 'var(--gray-100)',  border: 'var(--gray-200)',  accent: 'var(--gray-600)',  text: 'var(--gray-800)',  pill: 'var(--gray-600)' },
 }
 
 const MONTH_MAP: Record<string, number> = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }

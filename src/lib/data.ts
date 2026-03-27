@@ -26,7 +26,7 @@ export interface Phase {
   title: string
   subtitle: string
   duration: string
-  color: 'teal' | 'blue' | 'amber' | 'pink' | 'gray'
+  color: 'teal' | 'blue' | 'amber' | 'pink' | 'purple' | 'yellow' | 'gray'
   tasks: Task[]
   order: number
 }
