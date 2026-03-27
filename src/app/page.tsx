@@ -30,6 +30,8 @@ const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; dot: str
   'blocked':      { label: 'Blocked',       color: styles.statusBlocked,     dot: '#A32D2D' },
 }
 
+const OWNER_OPTIONS = ['Product/Dev', 'RevOps', 'Growth/Mktg', 'Data', 'Requestor/Stakeholder']
+
 const PHASE_COLORS = {
   teal:  { bg: 'var(--teal-50)',  border: 'var(--teal-100)', accent: 'var(--teal-600)', text: 'var(--teal-900)', pill: 'var(--teal-800)' },
   blue:  { bg: 'var(--blue-50)',  border: 'var(--blue-100)', accent: 'var(--blue-600)', text: 'var(--blue-900)', pill: 'var(--blue-800)' },
@@ -1194,13 +1196,14 @@ export default function RoadmapPage() {
                                     className={styles.editTextarea}
                                     rows={2}
                                   />
-                                  <input
-                                    type="text"
+                                  <select
                                     value={editValues[task.id]?.owner || ''}
                                     onChange={(e) => setEditValues(prev => ({ ...prev, [task.id]: { ...prev[task.id], owner: e.target.value } }))}
-                                    placeholder="Owner"
                                     className={styles.editInput}
-                                  />
+                                  >
+                                    <option value="">Select owner</option>
+                                    {OWNER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                                  </select>
                                   <input
                                     type="text"
                                     value={editValues[task.id]?.output || ''}
@@ -1424,13 +1427,14 @@ export default function RoadmapPage() {
                             className={styles.editTextarea}
                             rows={2}
                           />
-                          <input
-                            type="text"
+                          <select
                             value={newTask.owner}
                             onChange={(e) => setNewTask(prev => ({ ...prev, owner: e.target.value }))}
-                            placeholder="Owner"
                             className={styles.editInput}
-                          />
+                          >
+                            <option value="">Select owner</option>
+                            {OWNER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
                           <input
                             type="text"
                             value={newTask.output}
