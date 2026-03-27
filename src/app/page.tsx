@@ -31,7 +31,7 @@ const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; dot: str
 }
 
 const OWNER_OPTIONS = ['Product/Dev', 'RevOps', 'Growth/Mktg', 'Data', 'Requestor/Stakeholder']
-const TEAM_OPTIONS = ['In Sale', 'Pre-Sale', 'STC', 'Pricing', 'Growth/Mktg', 'RevOps', 'Dealer/Wholesale', 'FieldOps', 'Data', 'Product/Dev']
+const TEAM_OPTIONS = ['In Sale', 'Pre-Sale', 'STC', 'Pricing', 'Growth/Mktg', 'RevOps', 'Dealer/Wholesale', 'FieldOps', 'Data', 'Product/Dev', 'CX']
 
 const PHASE_COLORS = {
   teal:  { bg: 'var(--teal-50)',  border: 'var(--teal-100)', accent: 'var(--teal-600)', text: 'var(--teal-900)', pill: 'var(--teal-800)' },
