@@ -360,7 +360,7 @@ export default function RoadmapPage() {
   const startEditPhase = (phaseId: string) => {
     const phase = roadmapData.find(p => p.id === phaseId)
     if (phase) {
-      setEditValues({ ...editValues, [phaseId]: { title: phase.title, subtitle: phase.subtitle, duration: phase.duration } })
+      setEditValues({ ...editValues, [phaseId]: { title: phase.title, subtitle: phase.subtitle, duration: phase.duration, color: phase.color } })
       setEditingPhase(phaseId)
     }
   }
@@ -376,6 +376,7 @@ export default function RoadmapPage() {
           title: values.title,
           subtitle: values.subtitle,
           duration: values.duration,
+          color: values.color,
           updated_at: new Date().toISOString(),
         })
         .eq('id', phaseId)
@@ -1058,6 +1059,20 @@ export default function RoadmapPage() {
                           placeholder="Duration"
                           className={styles.editInput}
                         />
+                        <div className={styles.colorPicker}>
+                          <span className={styles.selectorLabel}>Color</span>
+                          <div className={styles.colorOptions}>
+                            {(Object.keys(PHASE_COLORS) as Phase['color'][]).map(color => (
+                              <button
+                                key={color}
+                                className={`${styles.colorOption} ${editValues[phase.id]?.color === color ? styles.colorOptionActive : ''}`}
+                                style={{ background: PHASE_COLORS[color].accent }}
+                                onClick={() => setEditValues(prev => ({ ...prev, [phase.id]: { ...prev[phase.id], color } }))}
+                                title={color}
+                              />
+                            ))}
+                          </div>
+                        </div>
                         <div className={styles.editActions}>
                           <button onClick={() => savePhase(phase.id)} className={styles.saveBtn}>Save</button>
                           <button onClick={() => cancelEditPhase(phase.id)} className={styles.cancelBtn}>Cancel</button>
