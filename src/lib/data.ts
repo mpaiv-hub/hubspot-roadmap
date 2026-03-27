@@ -12,6 +12,7 @@ export interface Task {
   title: string
   description: string
   owner: string
+  team?: string
   output?: string
   dependency?: string
   subtasks: Subtask[]

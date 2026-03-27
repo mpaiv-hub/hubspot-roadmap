@@ -31,6 +31,7 @@ const STATUS_CONFIG: Record<TaskStatus, { label: string; color: string; dot: str
 }
 
 const OWNER_OPTIONS = ['Product/Dev', 'RevOps', 'Growth/Mktg', 'Data', 'Requestor/Stakeholder']
+const TEAM_OPTIONS = ['In Sale', 'Pre-Sale', 'STC', 'Pricing', 'Growth/Mktg', 'RevOps', 'Dealer/Wholesale', 'FieldOps', 'Data', 'Product/Dev']
 
 const PHASE_COLORS = {
   teal:  { bg: 'var(--teal-50)',  border: 'var(--teal-100)', accent: 'var(--teal-600)', text: 'var(--teal-900)', pill: 'var(--teal-800)' },
@@ -93,7 +94,7 @@ export default function RoadmapPage() {
   const [editingSubtask, setEditingSubtask] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<Record<string, any>>({})
   const [addingTaskToPhase, setAddingTaskToPhase] = useState<string | null>(null)
-  const [newTask, setNewTask] = useState({ title: '', description: '', owner: '', output: '', dependency: '' })
+  const [newTask, setNewTask] = useState({ title: '', description: '', owner: '', team: '', output: '', dependency: '' })
   const [addingStepToTask, setAddingStepToTask] = useState<string | null>(null)
   const [newStepText, setNewStepText] = useState('')
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
@@ -102,6 +103,7 @@ export default function RoadmapPage() {
   const [addingWorkstream, setAddingWorkstream] = useState(false)
   const [newWorkstream, setNewWorkstream] = useState({ title: '', subtitle: '', duration: '', color: 'teal' as Phase['color'] })
   const [filterOwner, setFilterOwner] = useState<string>('')
+  const [filterTeam, setFilterTeam] = useState<string>('')
   const unsubscribeRef = useRef<(() => void) | null>(null)
 
   // Load from Supabase and subscribe to real-time updates
@@ -141,6 +143,7 @@ export default function RoadmapPage() {
               title: task.title,
               description: task.description,
               owner: task.owner,
+              team: task.team,
               output: task.output,
               dependency: task.dependency,
               subtasks: subtasksData.map(s => ({
@@ -422,6 +425,7 @@ export default function RoadmapPage() {
         title: task.title,
         description: task.description,
         owner: task.owner,
+        team: task.team,
         output: task.output,
         dependency: task.dependency
       } })
@@ -440,6 +444,7 @@ export default function RoadmapPage() {
           title: values.title,
           description: values.description,
           owner: values.owner,
+          team: values.team || null,
           output: values.output,
           dependency: values.dependency,
           updated_at: new Date().toISOString(),
@@ -515,6 +520,7 @@ export default function RoadmapPage() {
         title: newTask.title,
         description: newTask.description,
         owner: newTask.owner,
+        team: newTask.team || null,
         output: newTask.output || null,
         dependency: newTask.dependency || null,
         order: nextOrder,
@@ -527,6 +533,7 @@ export default function RoadmapPage() {
           title: newTask.title,
           description: newTask.description,
           owner: newTask.owner,
+          team: newTask.team,
           output: newTask.output,
           dependency: newTask.dependency,
           subtasks: [],
@@ -536,7 +543,7 @@ export default function RoadmapPage() {
         }]
       } : p))
       setAddingTaskToPhase(null)
-      setNewTask({ title: '', description: '', owner: '', output: '', dependency: '' })
+      setNewTask({ title: '', description: '', owner: '', team: '', output: '', dependency: '' })
     } catch (error) {
       console.error('Error adding task:', error)
     }
@@ -800,16 +807,21 @@ export default function RoadmapPage() {
   const allTasks = useMemo(() => roadmapData.flatMap(p => p.tasks), [roadmapData])
   const uniqueOwners = useMemo(() => Array.from(new Set(allTasks.map(t => t.owner).filter(Boolean))).sort(), [allTasks])
 
+  const hasActiveFilter = filterOwner || filterTeam
+
   // Filtered data: filter tasks within phases, then remove empty phases
   const filteredData = useMemo(() => {
-    if (!filterOwner) return roadmapData
+    if (!hasActiveFilter) return roadmapData
     return roadmapData
       .map(phase => ({
         ...phase,
-        tasks: phase.tasks.filter(t => t.owner === filterOwner),
+        tasks: phase.tasks.filter(t =>
+          (!filterOwner || t.owner === filterOwner) &&
+          (!filterTeam || t.team === filterTeam)
+        ),
       }))
       .filter(phase => phase.tasks.length > 0)
-  }, [roadmapData, filterOwner])
+  }, [roadmapData, filterOwner, filterTeam, hasActiveFilter])
 
   const formatDate = (iso: string) => {
     const d = new Date(iso)
@@ -1005,9 +1017,16 @@ export default function RoadmapPage() {
               {uniqueOwners.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           </div>
-          {filterOwner && (
-            <button className={styles.filterClearBtn} onClick={() => setFilterOwner('')}>
-              Clear filter
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Team</label>
+            <select className={styles.filterSelect} value={filterTeam} onChange={e => setFilterTeam(e.target.value)}>
+              <option value="">All</option>
+              {TEAM_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          {hasActiveFilter && (
+            <button className={styles.filterClearBtn} onClick={() => { setFilterOwner(''); setFilterTeam('') }}>
+              Clear filters
             </button>
           )}
         </div>
@@ -1204,6 +1223,14 @@ export default function RoadmapPage() {
                                     <option value="">Select owner</option>
                                     {OWNER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                                   </select>
+                                  <select
+                                    value={editValues[task.id]?.team || ''}
+                                    onChange={(e) => setEditValues(prev => ({ ...prev, [task.id]: { ...prev[task.id], team: e.target.value } }))}
+                                    className={styles.editInput}
+                                  >
+                                    <option value="">Select team</option>
+                                    {TEAM_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                                  </select>
                                   <input
                                     type="text"
                                     value={editValues[task.id]?.output || ''}
@@ -1228,6 +1255,7 @@ export default function RoadmapPage() {
                               )}
                               <div className={styles.taskTags}>
                                 <span className={styles.tag}>{task.owner}</span>
+                                {task.team && <span className={`${styles.tag} ${styles.tagPurple}`}>{task.team}</span>}
                                 {task.output && <span className={`${styles.tag} ${styles.tagBlue}`}>{task.output}</span>}
                                 {task.dependency && <span className={`${styles.tag} ${styles.tagAmber}`}>{task.dependency}</span>}
                               </div>
@@ -1435,6 +1463,14 @@ export default function RoadmapPage() {
                             <option value="">Select owner</option>
                             {OWNER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
+                          <select
+                            value={newTask.team}
+                            onChange={(e) => setNewTask(prev => ({ ...prev, team: e.target.value }))}
+                            className={styles.editInput}
+                          >
+                            <option value="">Select team</option>
+                            {TEAM_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
                           <input
                             type="text"
                             value={newTask.output}
@@ -1451,7 +1487,7 @@ export default function RoadmapPage() {
                           />
                           <div className={styles.editActions}>
                             <button onClick={() => addTask(phase.id)} className={styles.saveBtn}>Add Task</button>
-                            <button onClick={() => { setAddingTaskToPhase(null); setNewTask({ title: '', description: '', owner: '', output: '', dependency: '' }) }} className={styles.cancelBtn}>Cancel</button>
+                            <button onClick={() => { setAddingTaskToPhase(null); setNewTask({ title: '', description: '', owner: '', team: '', output: '', dependency: '' }) }} className={styles.cancelBtn}>Cancel</button>
                           </div>
                         </div>
                       </div>
