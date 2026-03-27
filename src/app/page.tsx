@@ -38,6 +38,20 @@ const PHASE_COLORS = {
   gray:  { bg: 'var(--gray-100)', border: 'var(--gray-200)', accent: 'var(--gray-600)', text: 'var(--gray-800)', pill: 'var(--gray-600)' },
 }
 
+const MONTH_MAP: Record<string, number> = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
+
+function parseDateFromStr(str: string): Date | null {
+  const match = str.trim().match(/([A-Za-z]+)\s+(\d+)/)
+  if (!match) return null
+  return new Date(2026, MONTH_MAP[match[1]] ?? 0, parseInt(match[2]))
+}
+
+function getDurationStartDate(duration: string): Date | null {
+  const parts = duration.split('-').map(s => s.trim())
+  if (parts.length < 1) return null
+  return parseDateFromStr(parts[0])
+}
+
 function phaseStatus(phase: Phase, state: RoadmapState): TaskStatus {
   const statuses = phase.tasks.map(t => state[t.id]?.status ?? 'not-started')
   if (statuses.length === 0) return 'not-started'
@@ -366,9 +380,25 @@ export default function RoadmapPage() {
         })
         .eq('id', phaseId)
 
-      setRoadmapData(prev => prev.map(p => p.id === phaseId ? { ...p, ...values } : p))
+      // Re-sort all phases by duration start date and persist new order
+      const updated = roadmapData.map(p => p.id === phaseId ? { ...p, ...values } : p)
+      const sorted = [...updated].sort((a, b) => {
+        const aDate = getDurationStartDate(a.duration)
+        const bDate = getDurationStartDate(b.duration)
+        if (!aDate && !bDate) return 0
+        if (!aDate) return 1
+        if (!bDate) return -1
+        return aDate.getTime() - bDate.getTime()
+      })
+
+      // Persist new order values to Supabase
+      await Promise.all(sorted.map((p, i) =>
+        supabase.from('roadmap_phases').update({ order: i }).eq('id', p.id)
+      ))
+
+      setRoadmapData(sorted.map((p, i) => ({ ...p, order: i })))
       setEditingPhase(null)
-      setEditValues(prev => { const updated = { ...prev }; delete updated[phaseId]; return updated })
+      setEditValues(prev => { const u = { ...prev }; delete u[phaseId]; return u })
     } catch (error) {
       console.error('Error saving phase:', error)
     }
@@ -772,17 +802,11 @@ export default function RoadmapPage() {
   const totalMs = timelineEnd.getTime() - timelineStart.getTime()
 
   // Parse "Apr 1 - May 5" duration into date positions on the timeline
-  const parseDate = (str: string) => {
-    const months: Record<string, number> = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
-    const match = str.trim().match(/([A-Za-z]+)\s+(\d+)/)
-    if (!match) return null
-    return new Date(2026, months[match[1]] ?? 0, parseInt(match[2]))
-  }
   const parseDuration = (duration: string) => {
     const parts = duration.split('-').map(s => s.trim())
     if (parts.length !== 2) return { startPct: 0, widthPct: 100 }
-    const startDate = parseDate(parts[0])
-    const endDate = parseDate(parts[1])
+    const startDate = parseDateFromStr(parts[0])
+    const endDate = parseDateFromStr(parts[1])
     if (!startDate || !endDate) return { startPct: 0, widthPct: 100 }
     const startPct = Math.max(0, ((startDate.getTime() - timelineStart.getTime()) / totalMs) * 100)
     const widthPct = Math.min(100 - startPct, ((endDate.getTime() - startDate.getTime()) / totalMs) * 100)
