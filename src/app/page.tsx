@@ -94,7 +94,7 @@ export default function RoadmapPage() {
   const [editingSubtask, setEditingSubtask] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<Record<string, any>>({})
   const [addingTaskToPhase, setAddingTaskToPhase] = useState<string | null>(null)
-  const [newTask, setNewTask] = useState({ title: '', description: '', owner: '', team: '', output: '', dependency: '' })
+  const [newTask, setNewTask] = useState({ title: '', description: '', owner: '', team: '', dependency: '' })
   const [addingStepToTask, setAddingStepToTask] = useState<string | null>(null)
   const [newStepText, setNewStepText] = useState('')
   const [comments, setComments] = useState<Record<string, Comment[]>>({})
@@ -144,7 +144,6 @@ export default function RoadmapPage() {
               description: task.description,
               owner: task.owner,
               team: task.team,
-              output: task.output,
               dependency: task.dependency,
               subtasks: subtasksData.map(s => ({
                 id: s.id,
@@ -426,7 +425,6 @@ export default function RoadmapPage() {
         description: task.description,
         owner: task.owner,
         team: task.team,
-        output: task.output,
         dependency: task.dependency
       } })
       setEditingTask(taskId)
@@ -445,7 +443,6 @@ export default function RoadmapPage() {
           description: values.description,
           owner: values.owner,
           team: values.team || null,
-          output: values.output,
           dependency: values.dependency,
           updated_at: new Date().toISOString(),
         })
@@ -521,7 +518,6 @@ export default function RoadmapPage() {
         description: newTask.description,
         owner: newTask.owner,
         team: newTask.team || null,
-        output: newTask.output || null,
         dependency: newTask.dependency || null,
         order: nextOrder,
       })
@@ -534,7 +530,6 @@ export default function RoadmapPage() {
           description: newTask.description,
           owner: newTask.owner,
           team: newTask.team,
-          output: newTask.output,
           dependency: newTask.dependency,
           subtasks: [],
           status: 'not-started' as TaskStatus,
@@ -543,7 +538,7 @@ export default function RoadmapPage() {
         }]
       } : p))
       setAddingTaskToPhase(null)
-      setNewTask({ title: '', description: '', owner: '', team: '', output: '', dependency: '' })
+      setNewTask({ title: '', description: '', owner: '', team: '', dependency: '' })
     } catch (error) {
       console.error('Error adding task:', error)
     }
@@ -1233,13 +1228,6 @@ export default function RoadmapPage() {
                                   </select>
                                   <input
                                     type="text"
-                                    value={editValues[task.id]?.output || ''}
-                                    onChange={(e) => setEditValues(prev => ({ ...prev, [task.id]: { ...prev[task.id], output: e.target.value } }))}
-                                    placeholder="Output"
-                                    className={styles.editInput}
-                                  />
-                                  <input
-                                    type="text"
                                     value={editValues[task.id]?.dependency || ''}
                                     onChange={(e) => setEditValues(prev => ({ ...prev, [task.id]: { ...prev[task.id], dependency: e.target.value } }))}
                                     placeholder="Dependency"
@@ -1256,7 +1244,6 @@ export default function RoadmapPage() {
                               <div className={styles.taskTags}>
                                 <span className={styles.tag}>{task.owner}</span>
                                 {task.team && <span className={`${styles.tag} ${styles.tagPurple}`}>{task.team}</span>}
-                                {task.output && <span className={`${styles.tag} ${styles.tagBlue}`}>{task.output}</span>}
                                 {task.dependency && <span className={`${styles.tag} ${styles.tagAmber}`}>{task.dependency}</span>}
                               </div>
                             </div>
@@ -1473,13 +1460,6 @@ export default function RoadmapPage() {
                           </select>
                           <input
                             type="text"
-                            value={newTask.output}
-                            onChange={(e) => setNewTask(prev => ({ ...prev, output: e.target.value }))}
-                            placeholder="Output (optional)"
-                            className={styles.editInput}
-                          />
-                          <input
-                            type="text"
                             value={newTask.dependency}
                             onChange={(e) => setNewTask(prev => ({ ...prev, dependency: e.target.value }))}
                             placeholder="Dependency (optional)"
@@ -1487,7 +1467,7 @@ export default function RoadmapPage() {
                           />
                           <div className={styles.editActions}>
                             <button onClick={() => addTask(phase.id)} className={styles.saveBtn}>Add Task</button>
-                            <button onClick={() => { setAddingTaskToPhase(null); setNewTask({ title: '', description: '', owner: '', team: '', output: '', dependency: '' }) }} className={styles.cancelBtn}>Cancel</button>
+                            <button onClick={() => { setAddingTaskToPhase(null); setNewTask({ title: '', description: '', owner: '', team: '', dependency: '' }) }} className={styles.cancelBtn}>Cancel</button>
                           </div>
                         </div>
                       </div>

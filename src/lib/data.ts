@@ -13,7 +13,6 @@ export interface Task {
   description: string
   owner: string
   team?: string
-  output?: string
   dependency?: string
   subtasks: Subtask[]
   status: TaskStatus
