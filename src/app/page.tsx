@@ -767,7 +767,7 @@ export default function RoadmapPage() {
 
   // Timeline date config
   const timelineStart = new Date('2026-04-01')
-  const timelineEnd = new Date('2026-06-30')
+  const timelineEnd = new Date('2026-07-01') // end of June (start of July)
   const timelineMonths = ['Apr', 'May', 'Jun']
   const totalMs = timelineEnd.getTime() - timelineStart.getTime()
 
@@ -841,11 +841,17 @@ export default function RoadmapPage() {
               <div className={styles.ganttLabelCol} />
               <div className={styles.ganttTrackCol}>
                 <div className={styles.monthLabels}>
-                  {timelineMonths.map((m, i) => (
-                    <span key={m} className={styles.monthLabel} style={{ left: `${(i / 3) * 100}%`, width: `${100 / 3}%` }}>
-                      {m} 2026
-                    </span>
-                  ))}
+                  {timelineMonths.map((m, i) => {
+                    const monthStart = new Date(2026, 3 + i, 1) // Apr=3, May=4, Jun=5
+                    const monthEnd = new Date(2026, 3 + i + 1, 1)
+                    const leftPct = ((monthStart.getTime() - timelineStart.getTime()) / totalMs) * 100
+                    const widthPct = ((monthEnd.getTime() - monthStart.getTime()) / totalMs) * 100
+                    return (
+                      <span key={m} className={styles.monthLabel} style={{ left: `${leftPct}%`, width: `${widthPct}%` }}>
+                        {m} 2026
+                      </span>
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -874,9 +880,11 @@ export default function RoadmapPage() {
                   <div className={styles.ganttTrackCol}>
                     {/* Grid lines */}
                     <div className={styles.ganttGridLines}>
-                      {[0, 1, 2, 3].map(i => (
-                        <div key={i} className={styles.ganttGridLine} style={{ left: `${(i / 3) * 100}%` }} />
-                      ))}
+                      {[0, 1, 2, 3].map(i => {
+                        const d = new Date(2026, 3 + i, 1)
+                        const pct = ((d.getTime() - timelineStart.getTime()) / totalMs) * 100
+                        return <div key={i} className={styles.ganttGridLine} style={{ left: `${pct}%` }} />
+                      })}
                       {/* Today marker */}
                       {(() => {
                         const now = new Date()
