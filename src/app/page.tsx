@@ -679,6 +679,73 @@ export default function RoadmapPage() {
     }
   }
 
+  const moveTask = async (phaseId: string, taskId: string, direction: 'up' | 'down') => {
+    const phase = roadmapData.find(p => p.id === phaseId)
+    if (!phase) return
+    const tasks = [...phase.tasks].sort((a, b) => a.order - b.order)
+    const idx = tasks.findIndex(t => t.id === taskId)
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= tasks.length) return
+
+    const orderA = tasks[idx].order
+    const orderB = tasks[swapIdx].order
+
+    try {
+      await Promise.all([
+        supabase.from('roadmap_tasks').update({ order: orderB }).eq('id', tasks[idx].id),
+        supabase.from('roadmap_tasks').update({ order: orderA }).eq('id', tasks[swapIdx].id),
+      ])
+
+      setRoadmapData(prev => prev.map(p => {
+        if (p.id !== phaseId) return p
+        const updated = p.tasks.map(t => {
+          if (t.id === tasks[idx].id) return { ...t, order: orderB }
+          if (t.id === tasks[swapIdx].id) return { ...t, order: orderA }
+          return t
+        })
+        updated.sort((a, b) => a.order - b.order)
+        return { ...p, tasks: updated }
+      }))
+    } catch (error) {
+      console.error('Error reordering tasks:', error)
+    }
+  }
+
+  const moveSubtask = async (taskId: string, subtaskId: string, direction: 'up' | 'down') => {
+    const task = roadmapData.flatMap(p => p.tasks).find(t => t.id === taskId)
+    if (!task) return
+    const subtasks = [...task.subtasks].sort((a, b) => a.order - b.order)
+    const idx = subtasks.findIndex(s => s.id === subtaskId)
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= subtasks.length) return
+
+    const orderA = subtasks[idx].order
+    const orderB = subtasks[swapIdx].order
+
+    try {
+      await Promise.all([
+        supabase.from('roadmap_subtasks').update({ order: orderB }).eq('id', subtasks[idx].id),
+        supabase.from('roadmap_subtasks').update({ order: orderA }).eq('id', subtasks[swapIdx].id),
+      ])
+
+      setRoadmapData(prev => prev.map(p => ({
+        ...p,
+        tasks: p.tasks.map(t => {
+          if (t.id !== taskId) return t
+          const updated = t.subtasks.map(s => {
+            if (s.id === subtasks[idx].id) return { ...s, order: orderB }
+            if (s.id === subtasks[swapIdx].id) return { ...s, order: orderA }
+            return s
+          })
+          updated.sort((a, b) => a.order - b.order)
+          return { ...t, subtasks: updated }
+        })
+      })))
+    } catch (error) {
+      console.error('Error reordering subtasks:', error)
+    }
+  }
+
   // Computed stats
   const overall = overallProgress(roadmapData, roadmapState)
 
@@ -995,8 +1062,22 @@ export default function RoadmapPage() {
                             className={styles.taskHeader}
                             onClick={() => setExpandedTask(isTaskExpanded ? null : task.id)}
                           >
-                            <div className={styles.taskIndex} style={{ background: c.bg, color: c.accent, border: `1px solid ${c.border}` }}>
-                              {taskIdx + 1}
+                            <div className={styles.reorderGroup}>
+                              <button
+                                className={styles.reorderBtn}
+                                disabled={taskIdx === 0}
+                                onClick={(e) => { e.stopPropagation(); moveTask(phase.id, task.id, 'up') }}
+                                title="Move up"
+                              >&#9650;</button>
+                              <div className={styles.taskIndex} style={{ background: c.bg, color: c.accent, border: `1px solid ${c.border}` }}>
+                                {taskIdx + 1}
+                              </div>
+                              <button
+                                className={styles.reorderBtn}
+                                disabled={taskIdx === phase.tasks.length - 1}
+                                onClick={(e) => { e.stopPropagation(); moveTask(phase.id, task.id, 'down') }}
+                                title="Move down"
+                              >&#9660;</button>
                             </div>
                             <div className={styles.taskInfo}>
                               <div className={styles.taskTitleRow}>
@@ -1095,8 +1176,22 @@ export default function RoadmapPage() {
                               <div className={styles.subtaskSection}>
                                 <span className={styles.sectionLabel}>Steps</span>
                                 <ul className={styles.subtaskList}>
-                                  {task.subtasks.map(sub => (
+                                  {task.subtasks.map((sub, subIdx) => (
                                     <li key={sub.id} className={styles.subtaskItem}>
+                                      <div className={styles.reorderGroupSm}>
+                                        <button
+                                          className={styles.reorderBtnSm}
+                                          disabled={subIdx === 0}
+                                          onClick={() => moveSubtask(task.id, sub.id, 'up')}
+                                          title="Move up"
+                                        >&#9650;</button>
+                                        <button
+                                          className={styles.reorderBtnSm}
+                                          disabled={subIdx === task.subtasks.length - 1}
+                                          onClick={() => moveSubtask(task.id, sub.id, 'down')}
+                                          title="Move down"
+                                        >&#9660;</button>
+                                      </div>
                                       <input
                                         type="checkbox"
                                         className={styles.subtaskCheckbox}

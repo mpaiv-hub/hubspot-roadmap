@@ -446,6 +446,64 @@
 }
 .editPhaseBtn:hover { border-color: var(--border-strong); color: var(--text-secondary); background: var(--gray-50); }
 
+/* ── Reorder buttons ── */
+.reorderGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.reorderBtn {
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 8px;
+  line-height: 1;
+  padding: 2px 4px;
+  color: var(--text-muted);
+  border-radius: 3px;
+  transition: all 0.15s;
+}
+.reorderBtn:hover:not(:disabled) {
+  color: var(--text-secondary);
+  background: var(--gray-100);
+  border-color: var(--border);
+}
+.reorderBtn:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.reorderGroupSm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.reorderBtnSm {
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 7px;
+  line-height: 1;
+  padding: 1px 3px;
+  color: var(--text-muted);
+  border-radius: 2px;
+  transition: all 0.15s;
+}
+.reorderBtnSm:hover:not(:disabled) {
+  color: var(--text-secondary);
+  background: var(--gray-100);
+  border-color: var(--border);
+}
+.reorderBtnSm:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
 /* ── Task cards ── */
 .taskList { display: flex; flex-direction: column; gap: 8px; }
 
