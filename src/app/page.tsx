@@ -99,6 +99,7 @@ export default function RoadmapPage() {
   const [commentFormOpen, setCommentFormOpen] = useState<string | null>(null)
   const [addingWorkstream, setAddingWorkstream] = useState(false)
   const [newWorkstream, setNewWorkstream] = useState({ title: '', subtitle: '', duration: '', color: 'teal' as Phase['color'] })
+  const [filterOwner, setFilterOwner] = useState<string>('')
   const unsubscribeRef = useRef<(() => void) | null>(null)
 
   // Load from Supabase and subscribe to real-time updates
@@ -793,6 +794,21 @@ export default function RoadmapPage() {
     }
   }, [roadmapData, roadmapState])
 
+  // Filter options: unique values across all tasks
+  const allTasks = useMemo(() => roadmapData.flatMap(p => p.tasks), [roadmapData])
+  const uniqueOwners = useMemo(() => Array.from(new Set(allTasks.map(t => t.owner).filter(Boolean))).sort(), [allTasks])
+
+  // Filtered data: filter tasks within phases, then remove empty phases
+  const filteredData = useMemo(() => {
+    if (!filterOwner) return roadmapData
+    return roadmapData
+      .map(phase => ({
+        ...phase,
+        tasks: phase.tasks.filter(t => t.owner === filterOwner),
+      }))
+      .filter(phase => phase.tasks.length > 0)
+  }, [roadmapData, filterOwner])
+
   const formatDate = (iso: string) => {
     const d = new Date(iso)
     return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -978,7 +994,23 @@ export default function RoadmapPage() {
 
       {/* Workstream Rows */}
       <main className={styles.main}>
-        {roadmapData.map((phase) => {
+        {/* Filters */}
+        <div className={styles.filterBar}>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Owner</label>
+            <select className={styles.filterSelect} value={filterOwner} onChange={e => setFilterOwner(e.target.value)}>
+              <option value="">All</option>
+              {uniqueOwners.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          {filterOwner && (
+            <button className={styles.filterClearBtn} onClick={() => setFilterOwner('')}>
+              Clear filter
+            </button>
+          )}
+        </div>
+
+        {filteredData.map((phase) => {
           const prog = phaseProgress(phase, roadmapState)
           const c = PHASE_COLORS[phase.color]
           const isExpanded = expandedPhase === phase.id
