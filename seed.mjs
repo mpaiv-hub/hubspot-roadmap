@@ -7,16 +7,16 @@ const supabase = createClient(
 
 async function seed() {
   console.log('Clearing existing data...')
-  await supabase.from('roadmap_subtasks').delete().neq('id', '')
-  await supabase.from('roadmap_tasks').delete().neq('id', '')
-  await supabase.from('roadmap_phases').delete().neq('id', '')
-  await supabase.from('roadmap_state').delete().neq('id', '')
-  await supabase.from('step_status').delete().neq('id', '')
-  await supabase.from('roadmap_comments').delete().neq('id', '')
+  await supabase.from('hs_roadmap_subtasks').delete().neq('id', '')
+  await supabase.from('hs_roadmap_tasks').delete().neq('id', '')
+  await supabase.from('hs_roadmap_phases').delete().neq('id', '')
+  await supabase.from('hs_roadmap_state').delete().neq('id', '')
+  await supabase.from('hs_step_status').delete().neq('id', '')
+  await supabase.from('hs_roadmap_comments').delete().neq('id', '')
   console.log('Cleared.')
 
   console.log('Inserting phases...')
-  const { error: pErr } = await supabase.from('roadmap_phases').insert([
+  const { error: pErr } = await supabase.from('hs_roadmap_phases').insert([
     { id: 'phase-1', title: 'Pipeline Cleanup & Consolidation', subtitle: 'Remove unused financing, trade-in, and prequalified pipelines', duration: 'Week 1-2', color: 'teal', order: 1 },
     { id: 'phase-2', title: 'Retail Deal Improvements', subtitle: 'Property syncs, deduplication, and vehicle notification integration', duration: 'Week 2-5', color: 'blue', order: 2 },
     { id: 'phase-3', title: 'STC Deal Improvements', subtitle: 'Rebuild STC lead scoring model', duration: 'Week 3-6', color: 'amber', order: 3 },
@@ -63,7 +63,7 @@ async function seed() {
     { id: 'phase-8-task-1', phase_id: 'phase-8', title: 'Retail Lead Stage Definitions', description: 'Define clear stage definitions for contacts entering Intent retail lifecycle stage', owner: 'Mark', output: null, dependency: 'Lifecycle Data Integrity (7b)', order: 1 },
     { id: 'phase-8-task-2', phase_id: 'phase-8', title: 'STC Lead Stage Definitions', description: 'Apply stage definition exercise to STC contacts entering Intent STC lifecycle stage', owner: 'Mark', output: null, dependency: null, order: 2 },
   ]
-  const { error: tErr } = await supabase.from('roadmap_tasks').insert(tasks)
+  const { error: tErr } = await supabase.from('hs_roadmap_tasks').insert(tasks)
   if (tErr) { console.error('Task insert error:', tErr); return }
   console.log(`${tasks.length} tasks inserted.`)
 
@@ -183,7 +183,7 @@ async function seed() {
     { id: 'phase-8-task-2-step-3', task_id: 'phase-8-task-2', text: 'Test stage progression', order: 3 },
     { id: 'phase-8-task-2-step-4', task_id: 'phase-8-task-2', text: 'Align with retail lifecycle', order: 4 },
   ]
-  const { error: sErr } = await supabase.from('roadmap_subtasks').insert(subtasks)
+  const { error: sErr } = await supabase.from('hs_roadmap_subtasks').insert(subtasks)
   if (sErr) { console.error('Subtask insert error:', sErr); return }
   console.log(`${subtasks.length} subtasks inserted.`)
 

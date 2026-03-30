@@ -112,7 +112,7 @@ export default function RoadmapPage() {
       try {
         // Load roadmap data
         const { data: phasesData, error: phasesError } = await supabase
-          .from('roadmap_phases')
+          .from('hs_roadmap_phases')
           .select('*')
           .order('order')
 
@@ -121,7 +121,7 @@ export default function RoadmapPage() {
         const phases: Phase[] = []
         for (const phase of phasesData) {
           const { data: tasksData, error: tasksError } = await supabase
-            .from('roadmap_tasks')
+            .from('hs_roadmap_tasks')
             .select('*')
             .eq('phase_id', phase.id)
             .order('order')
@@ -131,7 +131,7 @@ export default function RoadmapPage() {
           const tasks: Task[] = []
           for (const task of tasksData) {
             const { data: subtasksData, error: subtasksError } = await supabase
-              .from('roadmap_subtasks')
+              .from('hs_roadmap_subtasks')
               .select('*')
               .eq('task_id', task.id)
               .order('order')
@@ -172,7 +172,7 @@ export default function RoadmapPage() {
 
         // Load roadmap state
         const { data: stateData, error: stateError } = await supabase
-          .from('roadmap_state')
+          .from('hs_roadmap_state')
           .select('*')
 
         if (stateError) throw stateError
@@ -185,7 +185,7 @@ export default function RoadmapPage() {
 
         // Load step status
         const { data: stepData, error: stepError } = await supabase
-          .from('step_status')
+          .from('hs_step_status')
           .select('*')
 
         if (stepError) throw stepError
@@ -198,7 +198,7 @@ export default function RoadmapPage() {
 
         // Load comments
         const { data: commentsData, error: commentsError } = await supabase
-          .from('roadmap_comments')
+          .from('hs_roadmap_comments')
           .select('*')
           .order('created_at', { ascending: false })
 
@@ -221,8 +221,8 @@ export default function RoadmapPage() {
     loadState()
 
     // Set up real-time subscriptions
-    const roadmapChannel = supabase.channel('roadmap_state_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'roadmap_state' },
+    const roadmapChannel = supabase.channel('hs_roadmap_state_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hs_roadmap_state' },
         (payload) => {
           const { new: newRecord, old: oldRecord } = payload
           if (newRecord && payload.eventType !== 'DELETE') {
@@ -244,8 +244,8 @@ export default function RoadmapPage() {
       )
       .subscribe()
 
-    const stepChannel = supabase.channel('step_status_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'step_status' },
+    const stepChannel = supabase.channel('hs_step_status_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hs_step_status' },
         (payload) => {
           const { new: newRecord, old: oldRecord } = payload
           if (newRecord && payload.eventType !== 'DELETE') {
@@ -266,8 +266,8 @@ export default function RoadmapPage() {
       )
       .subscribe()
 
-    const commentsChannel = supabase.channel('roadmap_comments_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'roadmap_comments' },
+    const commentsChannel = supabase.channel('hs_roadmap_comments_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hs_roadmap_comments' },
         (payload) => {
           const { new: newRecord, old: oldRecord } = payload
           if (payload.eventType === 'INSERT' && newRecord) {
@@ -307,7 +307,7 @@ export default function RoadmapPage() {
       // For each task in newState, upsert into Supabase
       for (const [taskId, taskState] of Object.entries(newState)) {
         await supabase
-          .from('roadmap_state')
+          .from('hs_roadmap_state')
           .upsert(
             {
               id: taskId,
@@ -331,7 +331,7 @@ export default function RoadmapPage() {
 
     try {
       await supabase
-        .from('step_status')
+        .from('hs_step_status')
         .upsert(
           {
             id: stepId,
@@ -378,7 +378,7 @@ export default function RoadmapPage() {
 
     try {
       await supabase
-        .from('roadmap_phases')
+        .from('hs_roadmap_phases')
         .update({
           title: values.title,
           subtitle: values.subtitle,
@@ -401,7 +401,7 @@ export default function RoadmapPage() {
 
       // Persist new order values to Supabase
       await Promise.all(sorted.map((p, i) =>
-        supabase.from('roadmap_phases').update({ order: i }).eq('id', p.id)
+        supabase.from('hs_roadmap_phases').update({ order: i }).eq('id', p.id)
       ))
 
       setRoadmapData(sorted.map((p, i) => ({ ...p, order: i })))
@@ -437,7 +437,7 @@ export default function RoadmapPage() {
 
     try {
       await supabase
-        .from('roadmap_tasks')
+        .from('hs_roadmap_tasks')
         .update({
           title: values.title,
           description: values.description,
@@ -478,7 +478,7 @@ export default function RoadmapPage() {
 
     try {
       await supabase
-        .from('roadmap_subtasks')
+        .from('hs_roadmap_subtasks')
         .update({
           text: values.text,
           updated_at: new Date().toISOString(),
@@ -511,7 +511,7 @@ export default function RoadmapPage() {
     const id = `${phaseId}-task-${Date.now()}`
 
     try {
-      await supabase.from('roadmap_tasks').insert({
+      await supabase.from('hs_roadmap_tasks').insert({
         id,
         phase_id: phaseId,
         title: newTask.title,
@@ -551,7 +551,7 @@ export default function RoadmapPage() {
     const id = `${taskId}-step-${Date.now()}`
 
     try {
-      await supabase.from('roadmap_subtasks').insert({
+      await supabase.from('hs_roadmap_subtasks').insert({
         id,
         task_id: taskId,
         text: newStepText,
@@ -574,8 +574,8 @@ export default function RoadmapPage() {
 
   const deleteSubtask = async (subtaskId: string) => {
     try {
-      await supabase.from('roadmap_subtasks').delete().eq('id', subtaskId)
-      await supabase.from('step_status').delete().eq('id', subtaskId)
+      await supabase.from('hs_roadmap_subtasks').delete().eq('id', subtaskId)
+      await supabase.from('hs_step_status').delete().eq('id', subtaskId)
       setRoadmapData(prev => prev.map(p => ({
         ...p,
         tasks: p.tasks.map(t => ({
@@ -599,12 +599,12 @@ export default function RoadmapPage() {
       const task = roadmapData.flatMap(p => p.tasks).find(t => t.id === taskId)
       const subtaskIds = task ? task.subtasks.map(s => s.id) : []
       if (subtaskIds.length > 0) {
-        await supabase.from('step_status').delete().in('id', subtaskIds)
-        await supabase.from('roadmap_subtasks').delete().eq('task_id', taskId)
+        await supabase.from('hs_step_status').delete().in('id', subtaskIds)
+        await supabase.from('hs_roadmap_subtasks').delete().eq('task_id', taskId)
       }
-      await supabase.from('roadmap_state').delete().eq('id', taskId)
-      await supabase.from('roadmap_comments').delete().eq('task_id', taskId)
-      await supabase.from('roadmap_tasks').delete().eq('id', taskId)
+      await supabase.from('hs_roadmap_state').delete().eq('id', taskId)
+      await supabase.from('hs_roadmap_comments').delete().eq('task_id', taskId)
+      await supabase.from('hs_roadmap_tasks').delete().eq('id', taskId)
 
       setRoadmapData(prev => prev.map(p => p.id === phaseId ? { ...p, tasks: p.tasks.filter(t => t.id !== taskId) } : p))
       setRoadmapState(prev => { const u = { ...prev }; delete u[taskId]; return u })
@@ -625,17 +625,17 @@ export default function RoadmapPage() {
       const subtaskIds = phase.tasks.flatMap(t => t.subtasks.map(s => s.id))
 
       if (subtaskIds.length > 0) {
-        await supabase.from('step_status').delete().in('id', subtaskIds)
+        await supabase.from('hs_step_status').delete().in('id', subtaskIds)
       }
       for (const tid of taskIds) {
-        await supabase.from('roadmap_subtasks').delete().eq('task_id', tid)
-        await supabase.from('roadmap_state').delete().eq('id', tid)
-        await supabase.from('roadmap_comments').delete().eq('task_id', tid)
+        await supabase.from('hs_roadmap_subtasks').delete().eq('task_id', tid)
+        await supabase.from('hs_roadmap_state').delete().eq('id', tid)
+        await supabase.from('hs_roadmap_comments').delete().eq('task_id', tid)
       }
       if (taskIds.length > 0) {
-        await supabase.from('roadmap_tasks').delete().eq('phase_id', phaseId)
+        await supabase.from('hs_roadmap_tasks').delete().eq('phase_id', phaseId)
       }
-      await supabase.from('roadmap_phases').delete().eq('id', phaseId)
+      await supabase.from('hs_roadmap_phases').delete().eq('id', phaseId)
 
       setRoadmapData(prev => prev.filter(p => p.id !== phaseId))
       setRoadmapState(prev => { const u = { ...prev }; taskIds.forEach(id => delete u[id]); return u })
@@ -653,7 +653,7 @@ export default function RoadmapPage() {
     const id = `phase-${Date.now()}`
 
     try {
-      await supabase.from('roadmap_phases').insert({
+      await supabase.from('hs_roadmap_phases').insert({
         id,
         title: newWorkstream.title,
         subtitle: newWorkstream.subtitle,
@@ -685,7 +685,7 @@ export default function RoadmapPage() {
     const created_at = new Date().toISOString()
 
     try {
-      await supabase.from('roadmap_comments').insert({
+      await supabase.from('hs_roadmap_comments').insert({
         id,
         task_id: taskId,
         author: newComment.author,
@@ -707,7 +707,7 @@ export default function RoadmapPage() {
   const deleteComment = async (commentId: string, taskId: string) => {
     if (!window.confirm('Delete this comment?')) return
     try {
-      await supabase.from('roadmap_comments').delete().eq('id', commentId)
+      await supabase.from('hs_roadmap_comments').delete().eq('id', commentId)
       setComments(prev => ({
         ...prev,
         [taskId]: (prev[taskId] || []).filter(c => c.id !== commentId),
@@ -730,8 +730,8 @@ export default function RoadmapPage() {
 
     try {
       await Promise.all([
-        supabase.from('roadmap_tasks').update({ order: orderB }).eq('id', tasks[idx].id),
-        supabase.from('roadmap_tasks').update({ order: orderA }).eq('id', tasks[swapIdx].id),
+        supabase.from('hs_roadmap_tasks').update({ order: orderB }).eq('id', tasks[idx].id),
+        supabase.from('hs_roadmap_tasks').update({ order: orderA }).eq('id', tasks[swapIdx].id),
       ])
 
       setRoadmapData(prev => prev.map(p => {
@@ -762,8 +762,8 @@ export default function RoadmapPage() {
 
     try {
       await Promise.all([
-        supabase.from('roadmap_subtasks').update({ order: orderB }).eq('id', subtasks[idx].id),
-        supabase.from('roadmap_subtasks').update({ order: orderA }).eq('id', subtasks[swapIdx].id),
+        supabase.from('hs_roadmap_subtasks').update({ order: orderB }).eq('id', subtasks[idx].id),
+        supabase.from('hs_roadmap_subtasks').update({ order: orderA }).eq('id', subtasks[swapIdx].id),
       ])
 
       setRoadmapData(prev => prev.map(p => ({
