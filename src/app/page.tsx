@@ -1013,7 +1013,7 @@ export default function RoadmapPage() {
             </select>
           </div>
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Team</label>
+            <label className={styles.filterLabel}>Requestor</label>
             <select className={styles.filterSelect} value={filterTeam} onChange={e => setFilterTeam(e.target.value)}>
               <option value="">All</option>
               {TEAM_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
